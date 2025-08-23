@@ -6,6 +6,8 @@ require("dotenv").config();
 exports.signup = async (req, res) => {
   try {
     const { email, password } = req.body;
+    if (!email || !password)
+      return res.status(400).json({ error: "Email and password required" });
 
     const { data: existingUser } = await supabase
       .from("users")
@@ -21,10 +23,10 @@ exports.signup = async (req, res) => {
     const { data, error } = await supabase
       .from("users")
       .insert([{ email, password: hashedPassword }])
-      .select()
-      .single();
+      .select();
 
     if (error) return res.status(500).json({ error: error.message });
+    const user = data[0];
 
     const token = jwt.sign(
       { id: data.id, email: data.email },
